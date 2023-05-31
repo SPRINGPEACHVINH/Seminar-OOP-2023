@@ -1,3 +1,4 @@
+// Truy cập nội dung của đối tượng trong tập hợp mà không cần biết nội dung bên trong nó.
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -10,24 +11,22 @@ public:
     virtual bool isDone() const = 0;
     virtual int currentItem() const = 0;
 };
-//Lớp Iterator đại diện cho một lớp duyệt các phần tử trong tập hợp
-class collection
+
+class Collection
 {
 public:
     virtual Iterator *createIterator() = 0;
     virtual void add(int value) = 0;
-    virtual int size() const = 0;
-    virtual int at(int index) const = 0;
 };
-//Lớp collection đại diện cho một tập hợp các phần tử
+
 class ConcreteIterator : public Iterator
 {
 private:
-    collection *m_collection;
+    vector<int> *m_data;
     int m_current;
 
 public:
-    ConcreteIterator(collection *collection) : m_collection(collection), m_current(0) {}
+    ConcreteIterator(vector<int> *data) : m_data(data), m_current(0) {}
     void first() override
     {
         m_current = 0;
@@ -38,15 +37,15 @@ public:
     }
     bool isDone() const override
     {
-        return m_current >= m_collection->size();
+        return m_current >= m_data->size();
     }
     int currentItem() const override
     {
-        return m_collection->at(m_current);
+        return m_data->at(m_current);
     }
 };
 
-class ConcreteCollection : public collection
+class ConcreteCollection : public Collection
 {
 private:
     vector<int> m_data;
@@ -54,34 +53,26 @@ private:
 public:
     Iterator *createIterator() override
     {
-        return new ConcreteIterator(this);
+        return new ConcreteIterator(&m_data);
     }
-    void add(int value) override
+    void add(int value)
     {
         m_data.push_back(value);
     }
-    int size() const override
-    {
-        return m_data.size();
-    }
-    int at(int index) const override
-    {
-        return m_data.at(index);
-    }
 };
-//Lớp ConcreteIterator và ConcreteCollection là các lớp cụ thể thực hiện các phương thức của lớp Iterator và Collection.
+//Lớp ConcreteIterator truy cập nội dung của đối tượng trong tập hợp thông qua con trỏ m_data, mà không cần biết nội dung bên trong của đối tượng.
 int main()
 {
-    collection *collection = new ConcreteCollection();
-    collection->add(1);
-    collection->add(2);
-    collection->add(3);
-    Iterator *iterator = collection->createIterator();
+    Collection *Collection = new ConcreteCollection();
+    Collection->add(1);
+    Collection->add(2);
+    Collection->add(3);
+    Iterator *iterator = Collection->createIterator();
     for (iterator->first(); !iterator->isDone(); iterator->next())
     {
         cout << iterator->currentItem() << endl;
     }
     delete iterator;
-    delete collection;
+    delete Collection;
     return 0;
 }
